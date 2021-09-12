@@ -4,6 +4,7 @@
   "description": "cuban.engineer Telegram Bot",
   "main": "index.js",
   "scripts": {
+    "start": "node bot.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,6 +18,10 @@
   ],
   "author": "aleguerra05",
   "license": "MIT",
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "node-telegram-bot-api": "^0.54.0"
+  },
   "bugs": {
     "url": "https://github.com/aleguerra05/ce-bot/issues"
   },
