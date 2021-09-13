@@ -23,6 +23,6 @@ const server = http.createServer((req, res) => {
   res.end('Hello World');
 });
 
-server.listen(port, () => {
+server.listen(process.env.PORT || port, () => {
   console.log(`Server running at http://localhost:${port}/`);
 });
