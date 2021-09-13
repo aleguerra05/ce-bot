@@ -10,11 +10,33 @@ bot.on('polling_error', function(error){
     console.log(error);
 });
 
+//Grettings
+bot.onText(/\bhola\b|\bhi\b|\bhello\b/gmi, (msg) => {
+    var chatId = msg.chat.id;
+    var msgId = msg.message_id;
+    var nameUser = msg.from.first_name;
+    bot.sendMessage(chatId, `${nameUser}, a pleasure to have you here with us, how can we help you?`,{reply_to_message_id: msgId});
+});
+
+//Welcome and Godbye messages
+bot.on('message', function(msg){
+    
+    var chatId = msg.chat.id;
+    var chatitle = msg.chat.title;
+    
+    if (msg.new_chat_members != undefined){
+    
+        var nameNewMember = msg.new_chat_member.first_name;
+        bot.sendMessage(chatId, `Hello ${nameNewMember}, welcome to our ${chatitle} group`);
+
+    }
+    else if (msg.left_chat_member != undefined){
+        // if the user leave the group don't send any message for the moment
+    }
+});
+
 // Find text on a jobs title and return the job
 bot.on("text",(msg)=>{
-    var chatId = msg.chat.id;
-    
-
     var chatId = msg.chat.id;
     var nameUser = msg.from.first_name;
 
