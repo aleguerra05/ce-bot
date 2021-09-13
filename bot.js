@@ -10,7 +10,8 @@ bot.on('polling_error', function(error){
 
 bot.on("text",(msg)=>{
     var chatId = msg.chat.id;
-    bot.sendMessage(chatId,`Received: ${msg.text}`);
+    var msgId = msg.message_id;
+    bot.sendMessage(chatId,`Received: ${msg.text}`, {reply_to_message_id: msgId});
 });
 
 // Mock server
