@@ -49,6 +49,10 @@ bot.on("text",(msg)=>{
             jobsData.splice(jobsData.indexOf({title:undefined}));
 
             jobsData.forEach(job => {
+                job.title = job.title.replace(/[^a-zA-Z]+/g,' ');
+            });
+
+            jobsData.forEach(job => {
                 let words = job.title.split(' ');
                 let expression = new RegExp("\\b"+words.join("\\b|\\b")+"\\b",'i');
 
