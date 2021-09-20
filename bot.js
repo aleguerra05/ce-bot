@@ -93,6 +93,13 @@ bot.onText(/\/jobs/, function listJobs(msg) {
     });
 });
 
+// Ask for ce info
+bot.onText(/\/info/, function listJobs(msg) { 
+    var chatId = msg.chat.id;
+    var msgId = msg.message_id;
+    bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML",reply_to_message_id: msgId});
+});
+
 // Mock server
 const http = require('http');
 const { title } = require('process');
