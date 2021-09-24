@@ -15,7 +15,15 @@ bot.onText(/\bhola\b|\bhi\b|\bhello\b/gmi, (msg) => {
     var chatId = msg.chat.id;
     var msgId = msg.message_id;
     var nameUser = msg.from.first_name;
-    bot.sendMessage(chatId, `${nameUser}, a pleasure to have you here with us, how can we help you?`,{reply_to_message_id: msgId});
+    
+    const opts = {
+        reply_to_message_id: msg.message_id,
+        reply_markup: JSON.stringify({
+            inline_keyboard: [[{text:"Jobs",callback_data:"/jobs"},{text:"About the company",callback_data:"/info"}]]
+        })
+    };
+
+    bot.sendMessage(chatId, `${nameUser}, a pleasure to have you here with us, how can we help you?`,opts);
 });
 
 //Welcome and Godbye messages
@@ -26,8 +34,15 @@ bot.on('message', function(msg){
     
     if (msg.new_chat_members != undefined){
     
+        const opts = {
+            reply_to_message_id: msg.message_id,
+            reply_markup: JSON.stringify({
+                inline_keyboard: [[{text:"Jobs",callback_data:"/jobs"},{text:"About the company",callback_data:"/info"}]]
+            })
+        };
+
         var nameNewMember = msg.new_chat_member.first_name;
-        bot.sendMessage(chatId, `Hello ${nameNewMember}, welcome to our ${chatitle} group`);
+        bot.sendMessage(chatId, `Hello ${nameNewMember}, welcome to our ${chatitle} group`,opts);
 
     }
     else if (msg.left_chat_member != undefined){
@@ -47,18 +62,33 @@ bot.on("text",(msg)=>{
             var jobsData = await parserJobs.parseResponse(body,url);
 
             jobsData.splice(jobsData.indexOf({title:undefined}));
-
+            
             jobsData.forEach(job => {
                 job.title = job.title.replace(/[^a-zA-Z]+/g,' ');
             });
 
+            var list = [];
             jobsData.forEach(job => {
                 let words = job.title.split(' ');
                 let expression = new RegExp("\\b"+words.join("\\b|\\b")+"\\b",'i');
 
                 if(msg.text.match(expression))
-                    bot.sendMessage(chatId, `<b>${nameUser}, we have a job opportunity for</b> <a href=\"${job.link}\">${job.title}</a>`,{parse_mode : "HTML"});
+                {
+                    var line = []
+                    line.push({text:job.title,callback_data:job.title,url:job.link})
+                    list.push(line);
+                }
             });
+            if(list.length>0){
+                const opts = {
+                    reply_to_message_id: msg.message_id,
+                    reply_markup: JSON.stringify({
+                        inline_keyboard: []
+                    })
+                };
+                opts.reply_markup= JSON.stringify({inline_keyboard:list});
+                bot.sendMessage(msg.chat.id,'We found some job oportunities...',opts);
+            }
             
 
         }else{
@@ -70,34 +100,64 @@ bot.on("text",(msg)=>{
 
 // Ask for all jobs
 bot.onText(/\/jobs/, function listJobs(msg) {
-    
+    SendJobs(msg);
+});
+
+// SendJobs
+function SendJobs(msg) {
     var chatId = msg.chat.id;
     var msgId = msg.message_id;
 
-    var url = "https://odoo.cuban.engineer/jobs"
+    var url = "https://odoo.cuban.engineer/jobs";
 
-    request({ uri: url }, async function(error, response, body) {
-        if(!error){ 
-            var jobsData = await parserJobs.parseResponse(body,url);
+    const opts = {
+        reply_to_message_id: msg.message_id,
+        reply_markup: JSON.stringify({
+            inline_keyboard: []
+        })
+    };
 
-            jobsData.splice(jobsData.indexOf({title:undefined}));
+    request({ uri: url }, async function (error, response, body) {
+        if (!error) {
+            var jobsData = await parserJobs.parseResponse(body, url);
 
+            jobsData.splice(jobsData.indexOf({ title: undefined }));
+            var list = [];
             jobsData.forEach(job => {
-                bot.sendMessage(msg.chat.id,`<a href=\"${job.link}\">${job.title}</a>` ,{parse_mode : "HTML",reply_to_message_id: msgId});
+                var line = [];
+                line.push({ text: job.title, callback_data: job.title, url: job.link });
+                list.push(line);
             });
 
-        }else{
+            opts.reply_markup = JSON.stringify({ inline_keyboard: list });
+            bot.sendMessage(msg.chat.id, 'We found some job oportunities...', opts);
+        } else {
             console.log(error.message);
             bot.sendMessage(chatId, error.message);
         }
     });
-});
+}
 
 // Ask for ce info
-bot.onText(/\/info/, function listJobs(msg) { 
+bot.onText(/\/info/, function info(msg) { 
     var chatId = msg.chat.id;
     var msgId = msg.message_id;
     bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML",reply_to_message_id: msgId});
+});
+
+// Response to the buttons
+bot.on('callback_query',function onCallbackQuery(button){
+    const data = button.data;
+    const msg = button.message;
+    const chatId = button.message.chat.id;
+
+    switch(data){
+        case '/jobs':
+            SendJobs(msg);
+            break;
+        case '/info':
+            bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML"});
+    }
 });
 
 // Mock server
