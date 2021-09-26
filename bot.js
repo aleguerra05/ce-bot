@@ -1,6 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 const dotenv = require('dotenv');
 var parserJobs = require('./parseJobs');
+var Job = require('./Job');
 var request = require('request');
 dotenv.config();
 const token = process.env.TELEGRAM_BOT_KEY;
@@ -103,12 +104,45 @@ bot.onText(/\/jobs/, function listJobs(msg) {
     SendJobs(msg);
 });
 
+bot.onText(/\/test/, async function test(msg){
+    let jobs = await getJobs()
+    jobs.forEach(job => {
+        console.log(job);
+        console.log(job.expression);
+    });
+});
+
+function getJobs(){
+    var url = "https://odoo.cuban.engineer/jobs"
+    return new Promise(function (resolve,reject){
+        request({ uri: url }, async function(error, response, body) {
+            if(!error){ 
+                var jobsData = await parserJobs.parseResponse(body, url);
+    
+                jobsData.splice(jobsData.indexOf({ title: undefined }));
+                var list = [];
+                var jobs = [];
+
+                jobsData.forEach(data => {
+                    // var line = [];
+                    // line.push({ text: data.title, callback_data: data.title, url: data.link });
+                    // list.push(line);
+                    jobs.push(new Job(data.title,data.link));
+                });
+                resolve(jobs);
+    
+            }else{
+                console.log(error.message);
+                reject(error);
+            }
+        });
+    });
+}
+
 // SendJobs
 function SendJobs(msg) {
     var chatId = msg.chat.id;
     var msgId = msg.message_id;
-
-    var url = "https://odoo.cuban.engineer/jobs";
 
     const opts = {
         reply_to_message_id: msg.message_id,
@@ -117,12 +151,15 @@ function SendJobs(msg) {
         })
     };
 
+    var url = "https://odoo.cuban.engineer/jobs";
+
     request({ uri: url }, async function (error, response, body) {
         if (!error) {
             var jobsData = await parserJobs.parseResponse(body, url);
 
             jobsData.splice(jobsData.indexOf({ title: undefined }));
             var list = [];
+            
             jobsData.forEach(job => {
                 var line = [];
                 line.push({ text: job.title, callback_data: job.title, url: job.link });
