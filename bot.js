@@ -100,6 +100,13 @@ function sendJobs(msg,jobs){
 
 }
 
+function sendInfo(msg)
+{
+    var chatId = msg.chat.id;
+    var msgId = msg.message_id;
+    bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML",reply_to_message_id: msgId});
+}
+
 // Return al jobs
 function getJobs(){
     var url = "https://odoo.cuban.engineer/jobs"
@@ -126,16 +133,13 @@ function getJobs(){
 
 // Ask for ce info
 bot.onText(/\/info/, function info(msg) { 
-    var chatId = msg.chat.id;
-    var msgId = msg.message_id;
-    bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML",reply_to_message_id: msgId});
+    sendInfo(msg);
 });
 
 // Response to the buttons
 bot.on('callback_query', async function onCallbackQuery(button){
     const data = button.data;
     const msg = button.message;
-    const chatId = button.message.chat.id;
 
     switch(data){
         case '/jobs':
@@ -143,13 +147,14 @@ bot.on('callback_query', async function onCallbackQuery(button){
             sendJobs(msg,jobs);
             break;
         case '/info':
-            bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML"});
+            sendInfo(msg);
     }
 });
 
 // Mock server
 const http = require('http');
 const { title } = require('process');
+const { findSourceMap } = require('module');
 const port = 80;
 
 const server = http.createServer((req, res) => {
