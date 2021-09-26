@@ -65,7 +65,8 @@ bot.on("text",async (msg)=>{
         }
     });
 
-    sendJobs(msg,matchingJobs);
+    if(matchingJobs.length>0)
+        sendJobs(msg,matchingJobs);
 });
 
 // Ask for all jobs
