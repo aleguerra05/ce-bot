@@ -11,7 +11,7 @@ bot.on('polling_error', function(error){
     console.log(error);
 });
 
-//Grettings
+// Grettings
 bot.onText(/\bhola\b|\bhi\b|\bhello\b/gmi, (msg) => {
     var chatId = msg.chat.id;
     var msgId = msg.message_id;
@@ -27,7 +27,7 @@ bot.onText(/\bhola\b|\bhi\b|\bhello\b/gmi, (msg) => {
     bot.sendMessage(chatId, `${nameUser}, a pleasure to have you here with us, how can we help you?`,opts);
 });
 
-//Welcome and Godbye messages
+// Welcome and Godbye messages
 bot.on('message', function(msg){
     
     var chatId = msg.chat.id;
@@ -52,78 +52,65 @@ bot.on('message', function(msg){
 });
 
 // Find text on a jobs title and return the job
-bot.on("text",(msg)=>{
+bot.on("text",async (msg)=>{
     var chatId = msg.chat.id;
     var nameUser = msg.from.first_name;
 
-    var url = "https://odoo.cuban.engineer/jobs"
+    var jobs = await getJobs();
+    var matchingJobs = [];
 
-    request({ uri: url }, async function(error, response, body) {
-        if(!error){ 
-            var jobsData = await parserJobs.parseResponse(body,url);
-
-            jobsData.splice(jobsData.indexOf({title:undefined}));
-            
-            jobsData.forEach(job => {
-                job.title = job.title.replace(/[^a-zA-Z]+/g,' ');
-            });
-
-            var list = [];
-            jobsData.forEach(job => {
-                let words = job.title.split(' ');
-                let expression = new RegExp("\\b"+words.join("\\b|\\b")+"\\b",'i');
-
-                if(msg.text.match(expression))
-                {
-                    var line = []
-                    line.push({text:job.title,callback_data:job.title,url:job.link})
-                    list.push(line);
-                }
-            });
-            if(list.length>0){
-                const opts = {
-                    reply_to_message_id: msg.message_id,
-                    reply_markup: JSON.stringify({
-                        inline_keyboard: []
-                    })
-                };
-                opts.reply_markup= JSON.stringify({inline_keyboard:list});
-                bot.sendMessage(msg.chat.id,'We found some job oportunities...',opts);
-            }
-            
-
-        }else{
-            console.log(error.message);
-            bot.sendMessage(chatId, error.message);
+    jobs.forEach(job => {
+        if(msg.text.match(job.expression)){
+            matchingJobs.push(job);
         }
     });
+
+    sendJobs(msg,matchingJobs);
 });
 
 // Ask for all jobs
-bot.onText(/\/jobs/, function listJobs(msg) {
-    SendJobs(msg);
-});
-
-bot.onText(/\/test/, async function test(msg){
+bot.onText(/\/jobs/, async function listJobs(msg) {
     let jobs = await getJobs()
-    console.log(jobs);
+    //console.log(jobs);
+    sendJobs(msg,jobs);
 });
 
+// Send a response with a list of jobs
+function sendJobs(msg,jobs){
+    var chatId = msg.chat.id;
+    var msgId = msg.message_id;
+
+    const opts = {
+        reply_to_message_id: msg.message_id,
+        reply_markup: JSON.stringify({
+            inline_keyboard: []
+        })
+    };
+
+    var list = [];
+    jobs.forEach(job => {
+        var line = [];
+        line.push({ text: job.title, callback_data: job.title, url: job.url });
+        list.push(line);
+    });
+
+    opts.reply_markup = JSON.stringify({ inline_keyboard: list });
+    bot.sendMessage(msg.chat.id, 'We found some job oportunities...', opts);
+
+}
+
+// Return al jobs
 function getJobs(){
     var url = "https://odoo.cuban.engineer/jobs"
     return new Promise(function (resolve,reject){
         request({ uri: url }, async function(error, response, body) {
             if(!error){ 
                 var jobsData = await parserJobs.parseResponse(body, url);
-    
                 jobsData.splice(jobsData.indexOf({ title: undefined }));
-                var list = [];
+                
                 var jobs = [];
 
                 jobsData.forEach(data => {
-                    // var line = [];
-                    // line.push({ text: data.title, callback_data: data.title, url: data.link });
-                    // list.push(line);
                     jobs.push(new Job(data.title,data.link));
                 });
                 resolve(jobs);
@@ -136,42 +123,6 @@ function getJobs(){
     });
 }
 
-// SendJobs
-function SendJobs(msg) {
-    var chatId = msg.chat.id;
-    var msgId = msg.message_id;
-
-    const opts = {
-        reply_to_message_id: msg.message_id,
-        reply_markup: JSON.stringify({
-            inline_keyboard: []
-        })
-    };
-
-    var url = "https://odoo.cuban.engineer/jobs";
-
-    request({ uri: url }, async function (error, response, body) {
-        if (!error) {
-            var jobsData = await parserJobs.parseResponse(body, url);
-
-            jobsData.splice(jobsData.indexOf({ title: undefined }));
-            var list = [];
-            
-            jobsData.forEach(job => {
-                var line = [];
-                line.push({ text: job.title, callback_data: job.title, url: job.link });
-                list.push(line);
-            });
-
-            opts.reply_markup = JSON.stringify({ inline_keyboard: list });
-            bot.sendMessage(msg.chat.id, 'We found some job oportunities...', opts);
-        } else {
-            console.log(error.message);
-            bot.sendMessage(chatId, error.message);
-        }
-    });
-}
-
 // Ask for ce info
 bot.onText(/\/info/, function info(msg) { 
     var chatId = msg.chat.id;
@@ -180,14 +131,15 @@ bot.onText(/\/info/, function info(msg) {
 });
 
 // Response to the buttons
-bot.on('callback_query',function onCallbackQuery(button){
+bot.on('callback_query', async function onCallbackQuery(button){
     const data = button.data;
     const msg = button.message;
     const chatId = button.message.chat.id;
 
     switch(data){
         case '/jobs':
-            SendJobs(msg);
+            var jobs = await getJobs();
+            sendJobs(msg,jobs);
             break;
         case '/info':
             bot.sendPhoto(chatId,'https://odoo.cuban.engineer/web/image/11696-b3bf2141/92145579_2645038935779359_1740106545435246592_o.jpg',{caption:`<a href="https://cuban.engineer">About cuban.engineer </a> <b>We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.</b>`,parse_mode : "HTML"});
