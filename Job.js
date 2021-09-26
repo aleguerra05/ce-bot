@@ -3,11 +3,7 @@ class Job{
     {
         this.title = title;
         this.url = url;
-    }
-
-    get expression()
-    {
-        return new RegExp("\\b"+this.title.split(' ').join("\\b|\\b")+"\\b",'i'); 
+        this.expression = new RegExp("\\b"+title.replace(/[^a-zA-Z]+/g,' ').split(' ').join("\\b|\\b")+"\\b",'i'); 
     }
 }
 

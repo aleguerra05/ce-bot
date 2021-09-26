@@ -106,10 +106,7 @@ bot.onText(/\/jobs/, function listJobs(msg) {
 
 bot.onText(/\/test/, async function test(msg){
     let jobs = await getJobs()
-    jobs.forEach(job => {
-        console.log(job);
-        console.log(job.expression);
-    });
+    console.log(jobs);
 });
 
 function getJobs(){
