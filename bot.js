@@ -72,7 +72,6 @@ bot.on("text",async (msg)=>{
 // Ask for all jobs
 bot.onText(/\/jobs/, async function listJobs(msg) {
     let jobs = await getJobs()
-    //console.log(jobs);
     sendJobs(msg,jobs);
 });
 
@@ -95,8 +94,15 @@ function sendJobs(msg,jobs){
         list.push(line);
     });
 
-    opts.reply_markup = JSON.stringify({ inline_keyboard: list });
-    bot.sendMessage(msg.chat.id, 'We found some job oportunities...', opts);
+    if(list.length>0){
+        opts.reply_markup = JSON.stringify({ inline_keyboard: list });
+        bot.sendMessage(msg.chat.id, 'We found some job oportunities...', opts);
+    }
+    else{
+        bot.sendMessage(msg.chat.id, 'Currently we have not any job opportunity available');
+    }
+
+    
 
 }
 
@@ -119,7 +125,8 @@ function getJobs(){
                 var jobs = [];
 
                 jobsData.forEach(data => {
-                    jobs.push(new Job(data.title,data.link));
+                    if(data.title!=undefined)
+                        jobs.push(new Job(data.title,data.link));
                 });
                 resolve(jobs);
     
