@@ -5,7 +5,7 @@ cuban.engineer Telegram Bot
 ```
 npm install
 ```
-create and .env file and set the variable *TELEGRAM_BOT_KEY*
+create the .env file and set the variable *TELEGRAM_BOT_KEY*
 ```
 npm start
 ```
