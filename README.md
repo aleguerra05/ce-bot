@@ -13,6 +13,14 @@ create the .env file and set the variable *TELEGRAM_BOT_KEY*
 ```
 npm start
 ```
+or create the docker image
+```
+docker build -t cuban.engineer\ce-bot:1.0 .
+```
+and run it
+```
+docker run --env-file .env cuban.engineer\ce-bot:1.0
+```
 
 ## About cuban.engineer
 We are a team of passionate people whose goal is to improve everyone's life through disruptive products. We build great products to solve your business problems.
