@@ -3,7 +3,7 @@
 
 Currently the telegram bot find jobs from https://odoo.cuban.engineer/jobs and answer if there is any match with the job title.
 
-Any collaboration is appreciated
+Any collaboration is appreciated. See the Issues https://github.com/aleguerra05/ce-bot/issues
 
 ## Compile and Run
 ```
