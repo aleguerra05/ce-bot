@@ -31,4 +31,4 @@ and create your professional profile in our Platform https://cuban.engineer
 We bring you an easier way to find you a project. Join our Talent Pool and create a broad profile where you integrate all the information from your professional networks.
 
 ### Connect with us
-For any questions please feel free to contact us at jobs@cuban.engineer, you will receive the response of our recruiters
+For any questions please feel free to contact us at contact@cuban.engineer, you will receive the response as soon as posible.
